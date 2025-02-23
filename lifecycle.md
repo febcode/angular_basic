@@ -82,4 +82,126 @@ export class LifecycleDemoComponent implements OnInit, OnChanges, DoCheck, After
 | `ngAfterViewInit()` | When interacting with child components or `ViewChild`. |
 | `ngOnDestroy()` | When unsubscribing from Observables, clearing intervals, etc. |
 
-Would you like a **real-world example** of lifecycle hooks in a task management app? 🚀
+
+### **Real-World Example: Lifecycle Hooks in a Task Management App**  
+
+In a **Task Management App**, we can use **Angular lifecycle hooks** for various purposes, such as:  
+- **Initializing tasks (`ngOnInit`)**  
+- **Detecting input changes (`ngOnChanges`)**  
+- **Performing cleanup (`ngOnDestroy`)**  
+
+---
+
+### **📌 Example: Task List Component with Lifecycle Hooks**  
+#### `task-list.component.ts`
+```typescript
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, DoCheck, AfterViewInit, OnDestroy, SimpleChanges } from '@angular/core';
+import { TaskService } from '../services/task.service';
+
+@Component({
+  selector: 'app-task-list',
+  templateUrl: './task-list.component.html',
+  styleUrls: ['./task-list.component.css']
+})
+export class TaskListComponent implements OnInit, OnChanges, DoCheck, AfterViewInit, OnDestroy {
+  
+  @Input() tasks: any[] = [];
+  @Output() taskUpdated = new EventEmitter<any>();
+
+  constructor(private taskService: TaskService) {
+    console.log('Constructor: TaskListComponent created');
+  }
+
+  /** Called when @Input() `tasks` changes */
+  ngOnChanges(changes: SimpleChanges) {
+    console.log('ngOnChanges: Input changed', changes);
+  }
+
+  /** Called once after the component initializes */
+  ngOnInit(): void {
+    console.log('ngOnInit: Fetching tasks...');
+    this.taskService.getTasks().subscribe(tasks => {
+      this.tasks = tasks;
+    });
+  }
+
+  /** Called on every change detection cycle */
+  ngDoCheck(): void {
+    console.log('ngDoCheck: Change detection cycle triggered');
+  }
+
+  /** Called after the component’s view is initialized */
+  ngAfterViewInit(): void {
+    console.log('ngAfterViewInit: Task List View Initialized');
+  }
+
+  /** Called before the component is destroyed */
+  ngOnDestroy(): void {
+    console.log('ngOnDestroy: Cleaning up resources');
+  }
+
+  /** Simulate an update action */
+  updateTask(task: any) {
+    task.status = 'Completed';
+    task.updatedDate = new Date();
+    this.taskUpdated.emit(task);
+  }
+}
+```
+
+---
+
+### **📌 Example: Task Service (`task.service.ts`)**
+Handles fetching and managing tasks.  
+```typescript
+import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class TaskService {
+  
+  private tasks = [
+    { id: 1, name: 'Design UI', description: 'Create wireframes', status: 'Pending', assignee: 'Alice', createdDate: new Date(), updatedDate: new Date() },
+    { id: 2, name: 'Develop API', description: 'Build REST endpoints', status: 'In Progress', assignee: 'Bob', createdDate: new Date(), updatedDate: new Date() }
+  ];
+
+  getTasks(): Observable<any[]> {
+    return of(this.tasks);
+  }
+}
+```
+
+---
+
+### **📌 Example: Task List UI (`task-list.component.html`)**
+```html
+<h2>Task List</h2>
+<ul>
+  <li *ngFor="let task of tasks">
+    {{ task.name }} - {{ task.status }} - {{ task.assignee }}
+    <button (click)="updateTask(task)">Mark as Completed</button>
+  </li>
+</ul>
+```
+
+---
+
+### **🔹 How Lifecycle Hooks Work Here**
+| Hook | What It Does in the Task App |
+|------|------------------------------|
+| `ngOnChanges()` | Detects changes in `@Input() tasks` from the parent. |
+| `ngOnInit()` | Fetches tasks from `TaskService`. |
+| `ngDoCheck()` | Detects any manual changes to tasks (useful if not using `OnPush` change detection). |
+| `ngAfterViewInit()` | Confirms the view is initialized (useful for animations or `ViewChild`). |
+| `ngOnDestroy()` | Cleans up resources before the component is destroyed. |
+
+---
+
+### **✨ What You Get From This?**
+✔️ **Proper task initialization** (`ngOnInit`)  
+✔️ **Detect input changes** (`ngOnChanges`)  
+✔️ **Change detection on updates** (`ngDoCheck`)  
+✔️ **Prevent memory leaks** (`ngOnDestroy`)  
+
